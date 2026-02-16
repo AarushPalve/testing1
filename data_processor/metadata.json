@@ -1,0 +1,5 @@
+{
+  "name": "FRC Match Predictor Pro",
+  "description": "An advanced FRC scouting and match prediction tool that uses historical team data to forecast match outcomes and provide AI-driven strategic insights.",
+  "requestFramePermissions": []
+}

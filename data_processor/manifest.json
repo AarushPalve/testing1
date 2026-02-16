@@ -1,0 +1,18 @@
+
+{
+  "short_name": "FRC Predictor",
+  "name": "FRC Match Predictor Pro",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3063/3063822.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#f8fafc",
+  "display": "standalone",
+  "scope": "./",
+  "theme_color": "#4f46e5",
+  "description": "Professional FRC Scouting and Prediction Tool"
+}
