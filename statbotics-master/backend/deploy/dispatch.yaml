@@ -1,6 +1,0 @@
-dispatch:
-  - url: "*/v3/data/*"
-    service: data
-
-  - url: "*/.*"
-    service: default
