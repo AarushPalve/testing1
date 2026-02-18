@@ -1,0 +1,103 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const vitest_1 = require("vitest");
+const expr_1 = require("../shared/expr");
+const datavalue_1 = require("../shared/datavalue");
+(0, vitest_1.test)('bad parse', () => {
+    let str = 'mal4 + == 3';
+    let expr = expr_1.Expr.parse(str);
+    (0, vitest_1.expect)(expr.hasError()).toBe(true);
+});
+(0, vitest_1.test)('expr: prec1', () => {
+    let str = '1 + 2 + 3 + 4 != 10';
+    let expr = expr_1.Expr.parse(str);
+    (0, vitest_1.expect)(expr).toBeDefined();
+    (0, vitest_1.expect)(expr.hasError()).toBe(false);
+    let v = expr.evaluate(new Map());
+    (0, vitest_1.expect)(v).toBeDefined();
+    (0, vitest_1.expect)(v.type).toBe('boolean');
+    (0, vitest_1.expect)(v.value).toBe(false);
+});
+(0, vitest_1.test)('expr: prec2', () => {
+    let str = '1 + 2 * 3 ^ 5 + 6 * 7';
+    let expr = expr_1.Expr.parse(str);
+    (0, vitest_1.expect)(expr).toBeDefined();
+    (0, vitest_1.expect)(expr.hasError()).toBe(false);
+    let s = expr.toString();
+    let v = expr.evaluate(new Map());
+    (0, vitest_1.expect)(v).toBeDefined();
+    (0, vitest_1.expect)(v.type).toBe('integer');
+    (0, vitest_1.expect)(v.value).toBe(529);
+});
+(0, vitest_1.test)('expr: prec3', () => {
+    let str = '8 ^ 2 * 3 + 5 * 6 ^ 7';
+    let expr = expr_1.Expr.parse(str);
+    (0, vitest_1.expect)(expr).toBeDefined();
+    (0, vitest_1.expect)(expr.hasError()).toBe(false);
+    let s = expr.toString();
+    let v = expr.evaluate(new Map());
+    (0, vitest_1.expect)(v).toBeDefined();
+    (0, vitest_1.expect)(v.type).toBe('integer');
+    (0, vitest_1.expect)(v.value).toBe(1399872);
+});
+(0, vitest_1.test)('expr: prec4', () => {
+    let str = '(ma1 + ma2 + ma3 + ma4 > 0) && (maleave == false)';
+    let expr = expr_1.Expr.parse(str);
+    (0, vitest_1.expect)(expr).toBeDefined();
+    (0, vitest_1.expect)(expr.hasError()).toBe(false);
+    let values = new Map();
+    values.set('ma1', datavalue_1.DataValue.fromInteger(1));
+    values.set('ma2', datavalue_1.DataValue.fromInteger(2));
+    values.set('ma3', datavalue_1.DataValue.fromInteger(3));
+    values.set('ma4', datavalue_1.DataValue.fromInteger(4));
+    values.set('maleave', datavalue_1.DataValue.fromBoolean(false));
+    let v = expr.evaluate(values);
+    (0, vitest_1.expect)(v).toBeDefined();
+    (0, vitest_1.expect)(v.type).toBe('boolean');
+    (0, vitest_1.expect)(v.value).toBe(true);
+});
+(0, vitest_1.test)('expr: eval1', () => {
+    let str = '!a == b';
+    let expr = expr_1.Expr.parse(str);
+    (0, vitest_1.expect)(expr).toBeDefined();
+    (0, vitest_1.expect)(expr.hasError()).toBe(false);
+    let values = new Map();
+    values.set('a', datavalue_1.DataValue.fromBoolean(true));
+    values.set('b', datavalue_1.DataValue.fromBoolean(false));
+    let s = expr.toString();
+    let v = expr.evaluate(values);
+    (0, vitest_1.expect)(v).toBeDefined();
+    (0, vitest_1.expect)(v.type).toBe('boolean');
+    (0, vitest_1.expect)(v.value).toBe(true);
+});
+(0, vitest_1.test)('expr: eval1', () => {
+    let str = '!!a == b';
+    let expr = expr_1.Expr.parse(str);
+    (0, vitest_1.expect)(expr).toBeDefined();
+    (0, vitest_1.expect)(expr.hasError()).toBe(false);
+    let values = new Map();
+    values.set('a', datavalue_1.DataValue.fromBoolean(true));
+    values.set('b', datavalue_1.DataValue.fromBoolean(false));
+    let s = expr.toString();
+    let v = expr.evaluate(values);
+    (0, vitest_1.expect)(v).toBeDefined();
+    (0, vitest_1.expect)(v.type).toBe('boolean');
+    (0, vitest_1.expect)(v.value).toBe(false);
+});
+(0, vitest_1.test)('expr: coral use case', () => {
+    let str = 'mal4 + mal3 + mal2 + mal1 != ba_autoCoralCount';
+    let expr = expr_1.Expr.parse(str);
+    (0, vitest_1.expect)(expr).toBeDefined();
+    (0, vitest_1.expect)(expr.hasError()).toBe(false);
+    let values = new Map();
+    values.set('mal1', datavalue_1.DataValue.fromInteger(1));
+    values.set('mal2', datavalue_1.DataValue.fromInteger(2));
+    values.set('mal3', datavalue_1.DataValue.fromInteger(3));
+    values.set('mal4', datavalue_1.DataValue.fromInteger(4));
+    values.set('ba_autoCoralCount', datavalue_1.DataValue.fromInteger(8));
+    let v = expr.evaluate(values);
+    (0, vitest_1.expect)(v).toBeDefined();
+    (0, vitest_1.expect)(v.type).toBe('boolean');
+    (0, vitest_1.expect)(v.value).toBe(true);
+});
+//# sourceMappingURL=expr.test.js.map
