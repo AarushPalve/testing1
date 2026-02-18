@@ -1,0 +1,178 @@
+import { EventEmitter } from "events";
+export class XeroDialog extends EventEmitter {
+    constructor(title, yes_no = false) {
+        super();
+        this.startx_ = 0;
+        this.starty_ = 0;
+        this.startleft_ = 0;
+        this.starttop_ = 0;
+        this.process_enter_key_ = true;
+        this.yes_no_ = yes_no;
+        this.title_ = title;
+        this.moving_ = false;
+        this.mouse_move_handler_ = this.mouseMove.bind(this);
+        this.mouse_up_handler_ = this.mouseUp.bind(this);
+        this.key_down_handler_ = this.keyDown.bind(this);
+    }
+    disableEnterKeyProcessing() {
+        this.process_enter_key_ = false;
+    }
+    get popup() {
+        return this.popup_;
+    }
+    showRelative(win, x, y) {
+        this.parent_ = win;
+        this.prePlaceInit();
+        this.popup_.style.left = x + 'px';
+        this.popup_.style.top = y + 'px';
+        this.postPlaceInit();
+    }
+    centerDialog() {
+        let pbounds = this.parent_.offsetParent.getBoundingClientRect();
+        let dbounds = this.popup_.getBoundingClientRect();
+        let left = (pbounds.width / 2) - (dbounds.width / 2);
+        let top = (pbounds.height / 2) - (dbounds.height / 2);
+        this.popup_.style.left = left + 'px';
+        this.popup_.style.top = top + 'px';
+    }
+    showCentered(win) {
+        this.parent_ = win;
+        this.prePlaceInit();
+        if (XeroDialog.first_) {
+            setTimeout(this.centerDialog.bind(this), 100);
+            XeroDialog.first_ = false;
+        }
+        else {
+            setTimeout(this.centerDialog.bind(this), 10);
+        }
+        this.postPlaceInit();
+    }
+    postPlaceInit() {
+        document.addEventListener('keydown', this.key_down_handler_);
+        this.topbar_.addEventListener('mousedown', this.mouseDown.bind(this));
+    }
+    showAlert(message, title) {
+        let elem = document.activeElement;
+        // Wrapper for alert that automatically restores focus
+        alert(message);
+        // Use setTimeout to ensure alert is fully dismissed before restoring focus
+        setTimeout(() => {
+            elem.focus();
+        }, 0);
+    }
+    prePlaceInit() {
+        this.popup_ = document.createElement('div');
+        this.popup_.className = 'xero-popup-form-edit-dialog';
+        this.popup_.style.zIndex = '1100';
+        this.topbar_ = document.createElement('div');
+        this.topbar_.className = 'xero-popup-form-edit-dialog-topbar';
+        if (this.title_) {
+            this.topbar_.innerHTML = this.title_;
+        }
+        this.popup_.appendChild(this.topbar_);
+        this.client_area_ = document.createElement('div');
+        this.client_area_.className = 'xero-popup-form-edit-dialog-client';
+        this.popup_.appendChild(this.client_area_);
+        this.button_area_ = document.createElement('div');
+        this.button_area_.className = 'xero-popup-form-edit-dialog-buttons';
+        this.popup_.appendChild(this.button_area_);
+        this.populateDialog(this.client_area_);
+        this.populateButtons(this.button_area_);
+        this.parent_.appendChild(this.popup_);
+        this.onInit();
+    }
+    onInit() {
+        //
+        // Can be used by derived classes to do any initialization
+        // after the dialog is shown, like setting focus on a specific
+        // control.
+        //
+    }
+    mouseDown(event) {
+        if (event.button === 0 && this.popup_) {
+            this.moving_ = true;
+            this.startx_ = event.clientX;
+            this.starty_ = event.clientY;
+            this.startleft_ = parseInt(this.popup_.style.left);
+            this.starttop_ = parseInt(this.popup_.style.top);
+            document.addEventListener('mousemove', this.mouse_move_handler_);
+            document.addEventListener('mouseup', this.mouse_up_handler_);
+        }
+    }
+    mouseMove(event) {
+        if (this.moving_ && this.popup_) {
+            let dx = event.clientX - this.startx_;
+            let dy = event.clientY - this.starty_;
+            let left = this.startleft_ + dx;
+            let top = this.starttop_ + dy;
+            this.popup_.style.left = left + 'px';
+            this.popup_.style.top = top + 'px';
+        }
+    }
+    mouseUp(event) {
+        if (this.moving_) {
+            this.moving_ = false;
+            document.removeEventListener('mousemove', this.mouse_move_handler_);
+            document.removeEventListener('mouseup', this.mouse_up_handler_);
+        }
+    }
+    keyDown(event) {
+        if (event.key === 'Escape') {
+            this.cancelButton(event);
+        }
+        else if (event.key === 'Enter' && this.process_enter_key_) {
+            // Don't process Enter if the focus is on a text input, textarea, or select element
+            // This allows users to press Enter while editing without closing the dialog
+            const target = event.target;
+            const isTextInput = target.tagName === 'INPUT' &&
+                target.type === 'text' ||
+                target.type === 'number' ||
+                target.type === 'email' ||
+                target.type === 'password' ||
+                target.type === 'search' ||
+                target.type === 'tel' ||
+                target.type === 'url';
+            const isTextArea = target.tagName === 'TEXTAREA';
+            const isSelect = target.tagName === 'SELECT';
+            // Only trigger OK button if not in an input field
+            if (!isTextInput && !isTextArea && !isSelect) {
+                this.okButton(event);
+            }
+        }
+    }
+    okButton(event) {
+        if (this.isOKToClose(true)) {
+            this.close(true);
+        }
+    }
+    cancelButton(event) {
+        if (this.isOKToClose(false)) {
+            this.close(false);
+        }
+    }
+    isOKToClose(ok) {
+        return true;
+    }
+    populateButtons(div) {
+        let okbutton = document.createElement('button');
+        okbutton.innerText = this.yes_no_ ? 'Yes' : 'OK';
+        okbutton.className = 'xero-popup-form-edit-dialog-button';
+        okbutton.addEventListener('click', this.okButton.bind(this));
+        div.appendChild(okbutton);
+        let cancelbutton = document.createElement('button');
+        cancelbutton.innerText = this.yes_no_ ? 'No' : 'Cancel';
+        cancelbutton.className = 'xero-popup-form-edit-dialog-button';
+        cancelbutton.addEventListener('click', this.cancelButton.bind(this));
+        div.appendChild(cancelbutton);
+    }
+    close(changed) {
+        document.removeEventListener('keydown', this.key_down_handler_);
+        if (this.popup_ && this.parent_ && this.parent_.contains(this.popup_)) {
+            this.parent_.removeChild(this.popup_);
+            this.popup_ = undefined;
+        }
+        this.emit('closed', changed);
+    }
+}
+XeroDialog.first_ = true;
+//# sourceMappingURL=xerodialog.js.map
