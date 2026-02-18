@@ -1,0 +1,1 @@
+{"version":3,"file":"matchdbview.js","sourceRoot":"","sources":["../../src/views/matchdbview.ts"],"names":[],"mappings":"AACA,OAAO,EAAG,YAAY,EAAG,MAAM,oBAAoB,CAAC;AAEpD,MAAM,OAAO,qBAAsB,SAAQ,YAAY;IACnD,YAAmB,GAAY;QAC3B,KAAK,CAAC,GAAG,EAAE,oBAAoB,EAAE,OAAO,CAAC,CAAE;IAC/C,CAAC;CACJ"}
